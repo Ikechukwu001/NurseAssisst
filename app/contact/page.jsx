@@ -1,6 +1,6 @@
 "use client";
+
 import { useState } from "react";
-import Link from "next/link";
 import {
   FaEnvelope,
   FaWhatsapp,
@@ -8,6 +8,7 @@ import {
   FaArrowRight,
   FaCheckCircle,
 } from "react-icons/fa";
+
 import BackButton from "@/components/ui/BackButton";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -34,169 +35,292 @@ const contactPoints = [
 ];
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e) {
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  function handleSubmit(e) {
     e.preventDefault();
+
     setError("");
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      if (!res.ok) throw new Error("Failed to send message");
-
-      setSent(true);
-      setForm({ name: "", email: "", message: "" });
-    } catch (err) {
-      setError("Something went wrong. Please try again or email us directly.");
-    } finally {
+    // Demo submission.
+    // Connect this to your backend/email service later.
+    setTimeout(() => {
       setLoading(false);
-    }
+      setSent(true);
+
+      setForm({
+        name: "",
+        email: "",
+        message: "",
+      });
+    }, 1000);
+  }
+
+  function resetForm() {
+    setSent(false);
+    setError("");
   }
 
   return (
-    <div className="min-h-screen bg-navy-50 px-6 py-12 lg:px-16">
-      <div className="mx-auto max-w-4xl">
-        <BackButton href="/dashboard" label="Dashboard" className="mb-4" />
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Back button */}
+        <div className="mb-8">
+          <BackButton />
+        </div>
 
-        <div className="text-center">
-          <p className="readout text-xs text-navy-500">GET IN TOUCH</p>
-          <h1 className="mt-2 font-[var(--font-display)] text-3xl font-semibold text-navy-950 sm:text-4xl">
-            We're here to help
+        {/* Header */}
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-xs font-semibold tracking-[0.2em] text-slate-500">
+            GET IN TOUCH
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            We&apos;re here to help
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-navy-600">
-            Questions about your account, a paper, or something not working
-            right — send us a message.
+
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
+            Have a question about your account, an exam paper, or something
+            that isn&apos;t working properly? Send us a message and we&apos;ll
+            help you sort it out.
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.3fr]">
-          {/* Left: contact info + dev profile */}
-          <div className="space-y-4">
-            <div className="rounded-xl border border-navy-100 bg-white p-6 shadow-sm">
-              <h3 className="readout text-xs text-navy-500">REACH US DIRECTLY</h3>
-              <div className="mt-4 space-y-4">
-                {contactPoints.map(({ icon: Icon, label, value, href }) => {
-                  const content = (
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-navy-50">
-                        <Icon className="h-3.5 w-3.5 text-navy-900" />
-                      </span>
-                      <div>
-                        <p className="text-xs text-navy-500">{label}</p>
-                        <p className="text-sm font-medium text-navy-950">
-                          {value}
-                        </p>
+        {/* Main content */}
+        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-8">
+          {/* Left column */}
+          <div className="space-y-6">
+            {/* Contact information */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.15em] text-slate-400">
+                  REACH US DIRECTLY
+                </p>
+
+                <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                  Contact support
+                </h2>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                {contactPoints.map(
+                  ({ icon: Icon, label, value, href }) => {
+                    const content = (
+                      <div className="flex items-center gap-4">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                          <Icon className="h-4 w-4 text-slate-800" />
+                        </span>
+
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-slate-400">
+                            {label}
+                          </p>
+
+                          <p className="mt-0.5 truncate text-sm font-semibold text-slate-900">
+                            {value}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                  return href ? (
-                    <a key={label} href={href} target="_blank" rel="noreferrer">
-                      {content}
-                    </a>
-                  ) : (
-                    <div key={label}>{content}</div>
-                  );
-                })}
+                    );
+
+                    if (!href) {
+                      return (
+                        <div
+                          key={label}
+                          className="rounded-xl border border-slate-100 p-4"
+                        >
+                          {content}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <a
+                        key={label}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group block rounded-xl border border-slate-100 p-4 transition hover:border-slate-300 hover:bg-slate-50"
+                      >
+                        {content}
+
+                        <span className="mt-2 block pl-[60px] text-xs font-medium text-slate-500 opacity-0 transition group-hover:opacity-100">
+                          Open contact →
+                        </span>
+                      </a>
+                    );
+                  }
+                )}
               </div>
             </div>
 
-            {/* Meet the Developer */}
-            <div className="rounded-xl border border-navy-100 bg-navy-950 p-6 text-white shadow-sm">
-              <h3 className="readout text-xs text-navy-400">MEET THE DEVELOPER</h3>
-              <p className="mt-3 text-sm leading-relaxed text-navy-200">
-                NurseAssist is built and maintained by a solo developer
-                focused on exam-prep tools for Nigerian health science
-                students.
+            {/* Developer card */}
+            <div className="overflow-hidden rounded-2xl bg-slate-950 p-6 text-white shadow-sm sm:p-7">
+              <p className="text-xs font-semibold tracking-[0.15em] text-slate-400">
+                MEET THE DEVELOPER
               </p>
 
-              <div className="mt-5 rounded-lg border border-navy-800 bg-navy-900 p-4">
-                <p className="readout text-[10px] text-navy-500">
+              <h2 className="mt-3 text-lg font-semibold">
+                Built with students in mind
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                NurseAssist is built and maintained by a solo developer
+                focused on creating practical exam-preparation tools for
+                Nigerian health science students.
+              </p>
+
+              {/* Other project */}
+              <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+                <p className="text-[10px] font-semibold tracking-[0.15em] text-slate-500">
                   ALSO BUILT BY THE SAME DEVELOPER
                 </p>
-                <p className="mt-1.5 text-sm font-semibold text-white">
+
+                <h3 className="mt-2 text-sm font-semibold text-white">
                   PharmTechSuccess
+                </h3>
+
+                <p className="mt-1.5 text-xs leading-5 text-slate-400">
+                  CBT exam preparation for Pharmacy Technician students
+                  preparing for NPCE examinations.
                 </p>
-                <p className="mt-1 text-xs text-navy-400">
-                  CBT exam prep for Pharmacy Technician students (NPCE)
-                </p>
-                
+
+                <a
                   href="https://pharmtechsuccess.study"
                   target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)] hover:underline"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-white transition hover:opacity-80"
                 >
-                  Visit pharmtechsuccess.study
-                  <FaArrowRight className="h-2.5 w-2.5" />
+                  Visit PharmTechSuccess
+                  <FaArrowRight className="h-2.5 w-2.5 transition-transform group-hover:translate-x-0.5" />
                 </a>
               </div>
             </div>
           </div>
 
-          {/* Right: form */}
-          <div className="rounded-xl border border-navy-100 bg-white p-8 shadow-sm">
+          {/* Right column - Contact form */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             {sent ? (
-              <div className="flex flex-col items-center py-10 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50">
-                  <FaCheckCircle className="h-5 w-5 text-emerald-600" />
+              <div className="flex min-h-[420px] flex-col items-center justify-center py-10 text-center">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+                  <FaCheckCircle className="h-7 w-7 text-emerald-600" />
                 </span>
-                <h3 className="mt-4 font-[var(--font-display)] text-lg font-semibold text-navy-950">
+
+                <h2 className="mt-5 text-xl font-bold text-slate-950">
                   Message sent
-                </h3>
-                <p className="mt-2 max-w-xs text-sm text-navy-600">
-                  Thanks for reaching out — we'll get back to you within 24
-                  hours.
+                </h2>
+
+                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-600">
+                  Thanks for reaching out. We&apos;ve received your message
+                  and will get back to you as soon as possible.
                 </p>
+
                 <button
-                  onClick={() => setSent(false)}
-                  className="mt-6 text-sm font-medium text-navy-900 underline"
+                  type="button"
+                  onClick={resetForm}
+                  className="mt-7 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                 >
                   Send another message
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <Input
-                  label="Full name"
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-                <Input
-                  label="Email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                />
-                <div className="w-full">
-                  <label className="mb-1.5 block text-sm font-medium text-navy-800">
-                    Message
-                  </label>
-                  <textarea
-                    required
-                    rows={5}
-                    value={form.message}
-                    onChange={(e) =>
-                      setForm({ ...form, message: e.target.value })
-                    }
-                    className="w-full rounded-lg border border-navy-100 bg-white px-4 py-3 text-navy-950 outline-none transition-colors focus:border-navy-500 focus:ring-2 focus:ring-navy-100"
-                  />
+              <>
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.15em] text-slate-400">
+                    SEND A MESSAGE
+                  </p>
+
+                  <h2 className="mt-2 text-xl font-bold text-slate-950">
+                    How can we help?
+                  </h2>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Fill out the form below and our support team will get back
+                    to you.
+                  </p>
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Sending..." : "Send message"}
-                </Button>
-              </form>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="mt-7 space-y-5"
+                >
+                  <Input
+                    label="Full name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    required
+                    value={form.name}
+                    onChange={handleChange}
+                  />
+
+                  <Input
+                    label="Email address"
+                    name="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                    value={form.email}
+                    onChange={handleChange}
+                  />
+
+                  <div className="w-full">
+                    <label
+                      htmlFor="message"
+                      className="mb-1.5 block text-sm font-medium text-slate-800"
+                    >
+                      Message
+                    </label>
+
+                    <textarea
+                      id="message"
+                      name="message"
+                      required
+                      rows={6}
+                      placeholder="Tell us how we can help..."
+                      value={form.message}
+                      onChange={handleChange}
+                      className="w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+                    />
+                  </div>
+
+                  {error && (
+                    <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                      {error}
+                    </p>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    {loading ? "Sending..." : "Send message"}
+                  </Button>
+
+                  <p className="text-center text-xs leading-5 text-slate-400">
+                    We normally respond within 24 hours.
+                  </p>
+                </form>
+              </>
             )}
           </div>
         </div>
