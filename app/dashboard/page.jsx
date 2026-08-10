@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 
 const studyLinks = [
-  { href: "/questions", icon: FaBookOpen, label: "Practice Questions" },
+  { href: "/questions", icon: FaBookOpen, label: "Questions" },
   { href: "/practicals", icon: FaClipboardCheck, label: "Practical Exams" },
   { href: "/flashcards", icon: FaLayerGroup, label: "Flashcards" },
 ];

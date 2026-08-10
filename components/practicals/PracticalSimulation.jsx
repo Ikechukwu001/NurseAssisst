@@ -63,16 +63,16 @@ export default function PracticalSimulation({ scenario }) {
 
   if (phase === "intro") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-navy-950 px-6">
-        <div className="w-full max-w-lg rounded-2xl border border-navy-800 bg-navy-900 p-8 text-center">
-          <p className="readout text-xs text-navy-400">{scenario.category}</p>
-          <h1 className="mt-2 font-[var(--font-display)] text-2xl font-semibold text-white">
+      <div className="flex min-h-screen items-center justify-center bg-navy-50 px-6">
+        <div className="w-full max-w-lg rounded-2xl border border-navy-100 bg-white p-8 text-center shadow-sm">
+          <p className="readout text-xs text-navy-500">{scenario.category}</p>
+          <h1 className="mt-2 font-[var(--font-display)] text-2xl font-semibold text-navy-950">
             {scenario.title}
           </h1>
-          <p className="mt-4 text-sm text-navy-300">{scenario.patient}</p>
-          <div className="mt-6 rounded-lg bg-navy-950 p-4 text-left">
+          <p className="mt-4 text-sm text-navy-600">{scenario.patient}</p>
+          <div className="mt-6 rounded-lg bg-navy-50 p-4 text-left">
             <p className="readout text-[10px] text-navy-500">BEFORE YOU BEGIN</p>
-            <ul className="mt-2 space-y-1.5 text-sm text-navy-300">
+            <ul className="mt-2 space-y-1.5 text-sm text-navy-700">
               <li>• {scenario.stages.length} decision points, {STAGE_SECONDS}s each</li>
               <li>• No pausing, no going back once started</li>
               <li>• Rationale is shown only after the full case ends</li>
@@ -87,7 +87,7 @@ export default function PracticalSimulation({ scenario }) {
           </Button>
           <Link
             href="/practicals"
-            className="mt-4 block text-xs text-navy-500 hover:text-navy-300"
+            className="mt-4 block text-xs text-navy-500 hover:text-navy-900"
           >
             Cancel and go back
           </Link>
@@ -161,15 +161,15 @@ export default function PracticalSimulation({ scenario }) {
   const urgent = remaining <= 15;
 
   return (
-    <div className="min-h-screen bg-navy-950 px-6 py-10">
+    <div className="min-h-screen bg-navy-50 px-6 py-10">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
-          <span className="readout text-xs text-navy-400">
+          <span className="readout text-xs text-navy-500">
             {scenario.category} · STAGE {stageIndex + 1}/{scenario.stages.length}
           </span>
           <span
             className={`readout flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-              urgent ? "bg-red-500/20 text-red-400" : "bg-red-500/10 text-red-400"
+              urgent ? "bg-red-100 text-red-600" : "bg-red-50 text-red-500"
             }`}
           >
             <FaClock className="h-3 w-3" />
@@ -177,7 +177,7 @@ export default function PracticalSimulation({ scenario }) {
           </span>
         </div>
 
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-navy-800">
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-navy-100">
           <motion.div
             className="h-full bg-red-500"
             animate={{ width: `${(remaining / STAGE_SECONDS) * 100}%` }}
@@ -193,11 +193,11 @@ export default function PracticalSimulation({ scenario }) {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="mt-8 rounded-xl border border-navy-800 bg-navy-900 p-6">
-              <p className="text-sm leading-relaxed text-navy-100">
+            <div className="mt-8 rounded-xl border border-navy-100 bg-white p-6 shadow-sm">
+              <p className="text-sm leading-relaxed text-navy-800">
                 {stage.reveal}
               </p>
-              <div className="readout mt-4 flex flex-wrap gap-3 text-xs text-navy-400">
+              <div className="readout mt-4 flex flex-wrap gap-3 text-xs text-navy-500">
                 <span>HR {stage.vitals.hr}</span>
                 <span>SpO2 {stage.vitals.spo2}%</span>
                 <span>BP {stage.vitals.bp}</span>
@@ -205,7 +205,7 @@ export default function PracticalSimulation({ scenario }) {
               </div>
             </div>
 
-            <p className="mt-8 font-medium text-white">{stage.question}</p>
+            <p className="mt-8 font-medium text-navy-950">{stage.question}</p>
 
             <div className="mt-4 space-y-3">
               {stage.options.map((opt, i) => (
@@ -214,8 +214,8 @@ export default function PracticalSimulation({ scenario }) {
                   onClick={() => setSelected(i)}
                   className={`w-full rounded-lg border p-4 text-left text-sm transition-colors ${
                     selected === i
-                      ? "border-[var(--color-accent)] bg-navy-800 text-white"
-                      : "border-navy-800 bg-navy-900 text-navy-200 hover:border-navy-700"
+                      ? "border-navy-900 bg-navy-50 text-navy-950"
+                      : "border-navy-100 bg-white text-navy-700 hover:border-navy-200"
                   }`}
                 >
                   {opt}

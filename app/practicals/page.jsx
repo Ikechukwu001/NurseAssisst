@@ -1,7 +1,9 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
-import { FaClipboardCheck, FaArrowRight, FaClock } from "react-icons/fa";
+import { FaClipboardCheck, FaArrowRight, FaClock, FaLayerGroup } from "react-icons/fa";
 import BackButton from "@/components/ui/BackButton";
-import { scenarioCategories, scenarios } from "@/data/practicals";
+import { scenarioCategories, scenarios } from "@/data/practicals/index";
 
 const difficultyColor = {
   Intermediate: "bg-amber-50 text-amber-700",
@@ -10,6 +12,14 @@ const difficultyColor = {
 };
 
 export default function PracticalsPage() {
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const categories = ["All", ...new Set(scenarioCategories.map((s) => s.category))];
+  const filtered =
+    activeCategory === "All"
+      ? scenarioCategories
+      : scenarioCategories.filter((s) => s.category === activeCategory);
+
   return (
     <div className="min-h-screen bg-navy-50 px-6 py-12 lg:px-16">
       <div className="mx-auto max-w-5xl">
@@ -24,9 +34,29 @@ export default function PracticalsPage() {
           decide.
         </p>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {scenarioCategories.map((s) => {
-            const ready = Boolean(scenarios[s.id]);
+        {/* Category filter */}
+        <div className="mt-8 flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`readout rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
+                activeCategory === cat
+                  ? "bg-navy-950 text-white"
+                  : "border border-navy-100 bg-white text-navy-600 hover:text-navy-950"
+              }`}
+            >
+              {cat.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((s) => {
+            const scenario = scenarios[s.id];
+            const ready = Boolean(scenario);
+            const stageCount = scenario?.stages?.length ?? 0;
+
             const card = (
               <div
                 className={`group flex h-full flex-col justify-between rounded-xl border border-navy-100 bg-white p-6 shadow-sm transition-all ${
@@ -52,10 +82,18 @@ export default function PracticalsPage() {
                 </div>
 
                 <div className="mt-6 flex items-center justify-between">
-                  <span className="readout flex items-center gap-1.5 text-xs text-navy-500">
-                    <FaClock className="h-3 w-3" />
-                    {s.duration}
-                  </span>
+                  <div className="readout flex items-center gap-3 text-xs text-navy-500">
+                    <span className="flex items-center gap-1.5">
+                      <FaClock className="h-3 w-3" />
+                      {s.duration}
+                    </span>
+                    {ready && (
+                      <span className="flex items-center gap-1.5">
+                        <FaLayerGroup className="h-3 w-3" />
+                        {stageCount} stages
+                      </span>
+                    )}
+                  </div>
                   {ready ? (
                     <FaArrowRight className="h-3.5 w-3.5 text-navy-400 transition-transform group-hover:translate-x-1 group-hover:text-navy-900" />
                   ) : (
