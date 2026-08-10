@@ -62,45 +62,92 @@ export default function ExamInterface({ paper, questions }) {
             </p>
           </div>
 
-          <div className="mt-8 space-y-4">
-            {questions.map((q, i) => {
-              const userAnswer = answers[q.id];
-              const isCorrect = userAnswer === q.correctIndex;
-              return (
-                <div
-                  key={q.id}
-                  className="rounded-xl border border-navy-100 bg-white p-6"
-                >
-                  <div className="flex items-start gap-3">
-                    {isCorrect ? (
-                      <FaCheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
-                    ) : (
-                      <FaTimesCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-400" />
-                    )}
-                    <div>
-                      <p className="readout text-[10px] text-navy-400">
-                        QUESTION {i + 1}
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-navy-950">
-                        {q.text}
-                      </p>
-                      <p className="mt-2 text-xs text-navy-500">
-                        Your answer:{" "}
-                        {userAnswer !== undefined
-                          ? q.options[userAnswer]
-                          : "Not answered"}
-                      </p>
-                      {!isCorrect && (
-                        <p className="mt-1 text-xs text-navy-500">
-                          Correct answer: {q.options[q.correctIndex]}
-                        </p>
-                      )}
+                <div className="mt-8 space-y-4">
+          {questions.map((q, i) => {
+            const userAnswer = answers[q.id];
+            const isCorrect = userAnswer === q.correctIndex;
+            return (
+              <div
+                key={q.id}
+                className="rounded-xl border border-navy-100 bg-white p-6"
+              >
+                <div className="flex items-start gap-3">
+                  {isCorrect ? (
+                    <FaCheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
+                  ) : (
+                    <FaTimesCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-400" />
+                  )}
+                  <div className="flex-1">
+                    <p className="readout text-[10px] text-navy-400">
+                      QUESTION {i + 1}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-navy-950">
+                      {q.text}
+                    </p>
+
+                    {/* Every option, with its own note */}
+                    <div className="mt-4 space-y-2">
+                      {q.options.map((opt, optIndex) => {
+                        const isUserChoice = userAnswer === optIndex;
+                        const isCorrectChoice = optIndex === q.correctIndex;
+                        return (
+                          <div
+                            key={optIndex}
+                            className={`rounded-lg border p-3 text-xs ${
+                              isCorrectChoice
+                                ? "border-emerald-200 bg-emerald-50"
+                                : isUserChoice
+                                ? "border-red-200 bg-red-50"
+                                : "border-navy-100 bg-navy-50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span
+                                className={`font-medium ${
+                                  isCorrectChoice
+                                    ? "text-emerald-800"
+                                    : isUserChoice
+                                    ? "text-red-700"
+                                    : "text-navy-700"
+                                }`}
+                              >
+                                {opt}
+                              </span>
+                              <span className="readout flex flex-shrink-0 gap-1 text-[9px]">
+                                {isUserChoice && (
+                                  <span className="rounded-full bg-white px-2 py-0.5 text-navy-500">
+                                    YOUR ANSWER
+                                  </span>
+                                )}
+                                {isCorrectChoice && (
+                                  <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-white">
+                                    CORRECT
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                            {q.optionNotes?.[optIndex] && (
+                              <p className="mt-1.5 text-navy-500">
+                                {q.optionNotes[optIndex]}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
+
+                    {q.explanation && (
+                      <div className="mt-3 rounded-lg bg-navy-950 p-3">
+                        <p className="readout text-[9px] text-navy-400">SUMMARY</p>
+                        <p className="mt-1 text-xs text-navy-100">{q.explanation}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
+        </div>
 
           <Link href="/questions">
             <Button variant="primary" className="mt-8 w-full">

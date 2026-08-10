@@ -1,10 +1,19 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
-import { FaBookOpen, FaLock, FaArrowRight, FaClock } from "react-icons/fa";
+import { FaBookOpen, FaArrowRight, FaClock } from "react-icons/fa";
 import BackButton from "@/components/ui/BackButton";
-import { papers } from "@/data/papers";
+import { papers, questions } from "@/data/questions";
+
+const examTypes = ["General Nursing", "Midwifery"];
 
 export default function QuestionsPage() {
-  const years = [...new Set(papers.map((p) => p.year))].sort((a, b) => b - a);
+  const [activeType, setActiveType] = useState("General Nursing");
+
+  const filteredPapers = papers.filter((p) => p.examType === activeType);
+  const years = [...new Set(filteredPapers.map((p) => p.year))].sort(
+    (a, b) => b - a
+  );
 
   return (
     <div className="min-h-screen bg-navy-50 px-6 py-12 lg:px-16">
@@ -16,20 +25,46 @@ export default function QuestionsPage() {
           Questions
         </h1>
         <p className="mt-2 text-navy-600">
-          Select a paper to begin a timed, CBT-format practice session.
+          Select an exam type and paper to begin a timed, CBT-format practice
+          session.
         </p>
+
+        <div className="mt-8 inline-flex items-center rounded-full border border-navy-100 bg-white p-1">
+          {examTypes.map((type) => (
+            <button
+              key={type}
+              onClick={() => setActiveType(type)}
+              className={`readout rounded-full px-5 py-2 text-xs font-medium transition-colors ${
+                activeType === type
+                  ? "bg-navy-950 text-white"
+                  : "text-navy-600 hover:text-navy-950"
+              }`}
+            >
+              {type.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {years.length === 0 && (
+          <p className="mt-10 text-sm text-navy-500">
+            No papers available for {activeType} yet.
+          </p>
+        )}
 
         {years.map((year) => (
           <div key={year} className="mt-10">
             <h2 className="readout text-sm font-medium text-navy-500">{year}</h2>
             <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {papers
+              {filteredPapers
                 .filter((p) => p.year === year)
+                .sort((a, b) => a.paperNumber - b.paperNumber)
                 .map((paper) => {
+                  const ready = (questions[paper.id]?.length ?? 0) > 0;
+
                   const card = (
                     <div
                       className={`group flex h-full flex-col justify-between rounded-xl border border-navy-100 bg-white p-6 shadow-sm transition-all ${
-                        paper.isFree ? "hover:-translate-y-0.5 hover:shadow-md" : ""
+                        ready ? "hover:-translate-y-0.5 hover:shadow-md" : "opacity-60"
                       }`}
                     >
                       <div>
@@ -38,7 +73,7 @@ export default function QuestionsPage() {
                             <FaBookOpen className="h-4 w-4 text-white" />
                           </span>
                           <span className="readout rounded-full bg-navy-100 px-2.5 py-1 text-[10px] text-navy-700">
-                            {paper.code}
+                            PAPER {paper.paperNumber}
                           </span>
                         </div>
                         <h3 className="mt-4 font-semibold text-navy-950">
@@ -54,26 +89,23 @@ export default function QuestionsPage() {
                           <FaClock className="h-3 w-3" />
                           {paper.duration} min
                         </span>
-                        {paper.isFree ? (
+                        {ready ? (
                           <FaArrowRight className="h-3.5 w-3.5 text-navy-400 transition-transform group-hover:translate-x-1 group-hover:text-navy-900" />
                         ) : (
-                          <span className="readout flex items-center gap-1 text-[10px] text-navy-400">
-                            <FaLock className="h-2.5 w-2.5" />
-                            PREMIUM
+                          <span className="readout text-[10px] text-navy-400">
+                            COMING SOON
                           </span>
                         )}
                       </div>
                     </div>
                   );
 
-                  return paper.isFree ? (
+                  return ready ? (
                     <Link key={paper.id} href={`/questions/${paper.id}`}>
                       {card}
                     </Link>
                   ) : (
-                    <Link key={paper.id} href="/pricing">
-                      {card}
-                    </Link>
+                    <div key={paper.id}>{card}</div>
                   );
                 })}
             </div>

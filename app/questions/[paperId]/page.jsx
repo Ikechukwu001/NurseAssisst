@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { papers } from "@/data/papers";
-import { questions } from "@/data/questions";
+import { papers, questions } from "@/data/questions";
 import ExamInterface from "@/components/exam/ExamInterface";
 
 export default async function PaperExamPage({ params }) {
@@ -8,7 +7,7 @@ export default async function PaperExamPage({ params }) {
   const paper = papers.find((p) => p.id === paperId);
   const paperQuestions = questions[paperId];
 
-  if (!paper || !paperQuestions) notFound();
+  if (!paper || !paperQuestions || paperQuestions.length === 0) notFound();
 
   return <ExamInterface paper={paper} questions={paperQuestions} />;
 }
