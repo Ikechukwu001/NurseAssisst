@@ -10,9 +10,10 @@ import {
   FaFireAlt,
   FaChevronRight,
 } from "react-icons/fa";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 const studyLinks = [
-  { href: "/questions", icon: FaBookOpen, label: "Questions" },
+  { href: "/questions", icon: FaBookOpen, label: "Practice Questions" },
   { href: "/practicals", icon: FaClipboardCheck, label: "Practical Exams" },
   { href: "/flashcards", icon: FaLayerGroup, label: "Flashcards" },
 ];
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
           </div>
         </header>
 
-        {/* Study tools — minimal list, not cards */}
+        {/* Study tools */}
         <div className="mt-8 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-sm">
           {studyLinks.map(({ href, icon: Icon, label }, i) => (
             <Link
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {/* Account-level links — secondary, quieter */}
+        {/* Account-level links + logout */}
         <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-sm">
           {accountLinks.map(({ href, icon: Icon, label }, i) => (
             <Link
@@ -86,6 +87,7 @@ export default async function DashboardPage() {
               <FaChevronRight className="h-3 w-3 text-navy-300 transition-transform group-hover:translate-x-0.5" />
             </Link>
           ))}
+          <LogoutButton className="border-t border-navy-100" />
         </div>
       </div>
     </div>
