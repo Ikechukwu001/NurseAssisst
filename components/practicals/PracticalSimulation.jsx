@@ -4,11 +4,22 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import Button from "@/components/ui/Button";
+import { saveLastActivity } from "@/lib/continueTracking";
+
 
 const STAGE_SECONDS = 90;
 
 function useCountdown(seconds, onExpire, resetKey) {
   const [remaining, setRemaining] = useState(seconds);
+
+  useEffect(() => {
+  saveLastActivity({
+    type: "practicals",
+    title: scenario.title,
+    subtitle: scenario.category,
+    href: `/practicals/${scenario.id}`,
+  });
+}, [scenario]);
 
   useEffect(() => {
     setRemaining(seconds);

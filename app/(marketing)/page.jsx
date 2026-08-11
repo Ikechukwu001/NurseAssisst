@@ -29,7 +29,7 @@ const features = [
     desc: "Practice with real past questions organized by year and paper — timed, structured, exactly like the real exam.",
   },
   {
-    lottiePath: "/lottie/clipboard-check.json",
+    lottiePath: "/lottie/Profile-badge.json",
     title: "Practical Simulations",
     desc: "Scenario-based clinical cases delivered progressively, under real exam pressure — not flat multiple choice.",
   },
@@ -119,6 +119,30 @@ export default function LandingPage() {
 
       <PulseDivider />
 
+      {/* Auth section — inline sign up / log in, no separate pages */}
+<section id="auth" className="mx-auto max-w-7xl px-6 py-24 lg:px-16">
+  <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+    <div>
+      <p className="readout text-xs text-navy-500">GET STARTED</p>
+      <h2 className="mt-2 font-[var(--font-display)] text-3xl font-semibold text-navy-950 sm:text-4xl">
+        Your exam doesn't wait.
+        <br />
+        Neither should your prep.
+      </h2>
+      <p className="mt-4 max-w-sm text-navy-600">
+        Create a free account in seconds — one free paper, one flashcard
+        deck, and one practical scenario to try, no card required.
+      </p>
+    </div>
+
+    <div className="mx-auto w-full max-w-sm">
+      <AuthWidget />
+    </div>
+  </div>
+</section>
+  
+  <PulseDivider />
+
       {/* Practicals spotlight — the intense, differentiated section */}
       <section className="bg-navy-950 py-24 text-white">
         <div className="mx-auto max-w-7xl px-6 lg:px-16">
@@ -188,30 +212,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <PulseDivider />
-
-{/* Auth section — inline sign up / log in, no separate pages */}
-<section id="auth" className="mx-auto max-w-7xl px-6 py-24 lg:px-16">
-  <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-    <div>
-      <p className="readout text-xs text-navy-500">GET STARTED</p>
-      <h2 className="mt-2 font-[var(--font-display)] text-3xl font-semibold text-navy-950 sm:text-4xl">
-        Your exam doesn't wait.
-        <br />
-        Neither should your prep.
-      </h2>
-      <p className="mt-4 max-w-sm text-navy-600">
-        Create a free account in seconds — one free paper, one flashcard
-        deck, and one practical scenario to try, no card required.
-      </p>
-    </div>
-
-    <div className="mx-auto w-full max-w-sm">
-      <AuthWidget />
-    </div>
-  </div>
-</section>
 
       <Footer />
     </div>

@@ -7,10 +7,10 @@ import {
   FaLayerGroup,
   FaTags,
   FaEnvelope,
-  FaFireAlt,
   FaChevronRight,
 } from "react-icons/fa";
 import LogoutButton from "@/components/auth/LogoutButton";
+import ContinueCard from "@/components/dashboard/ContinueCard";
 
 const studyLinks = [
   { href: "/questions", icon: FaBookOpen, label: "Practice Questions" },
@@ -36,21 +36,18 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-navy-50 px-6 py-12 lg:px-16">
       <div className="mx-auto max-w-2xl">
-        <header className="flex items-center justify-between">
-          <div>
-            <p className="readout text-xs text-navy-500">DASHBOARD</p>
-            <h1 className="mt-1 font-[var(--font-display)] text-2xl font-semibold text-navy-950">
-              Welcome back, {firstName}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 rounded-full border border-navy-100 bg-white px-3.5 py-2 text-sm font-medium text-navy-800 shadow-sm">
-            <FaFireAlt className="h-3.5 w-3.5 text-orange-500" />
-            <span className="readout text-xs">0 day streak</span>
-          </div>
+        <header>
+          <p className="readout text-xs text-navy-500">DASHBOARD</p>
+          <h1 className="mt-1 font-[var(--font-display)] text-2xl font-semibold text-navy-950">
+            Welcome back, {firstName}
+          </h1>
         </header>
 
-        {/* Study tools */}
-        <div className="mt-8 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-sm">
+        <div className="mt-6">
+          <ContinueCard />
+        </div>
+
+        <div className="mt-6 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-sm">
           {studyLinks.map(({ href, icon: Icon, label }, i) => (
             <Link
               key={href}
@@ -70,7 +67,6 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {/* Account-level links + logout */}
         <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white shadow-sm">
           {accountLinks.map(({ href, icon: Icon, label }, i) => (
             <Link

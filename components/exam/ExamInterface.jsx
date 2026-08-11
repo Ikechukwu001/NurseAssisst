@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaClock, FaFlag, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import Button from "@/components/ui/Button";
+import { saveLastActivity } from "@/lib/continueTracking";
+
 
 export default function ExamInterface({ paper, questions }) {
   const [answers, setAnswers] = useState({});
@@ -11,6 +13,16 @@ export default function ExamInterface({ paper, questions }) {
   const [remaining, setRemaining] = useState(paper.duration * 60);
   const [submitted, setSubmitted] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+  if (submitted) return;
+  saveLastActivity({
+    type: "questions",
+    title: paper.subject,
+    subtitle: `Paper ${paper.paperNumber} · ${paper.examType}`,
+    href: `/questions/${paper.id}`,
+  });
+}, [paper, submitted]);
 
   useEffect(() => {
     if (submitted) return;

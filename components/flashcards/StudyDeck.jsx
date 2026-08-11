@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaRedo } from "react-icons/fa";
 import Button from "@/components/ui/Button";
 import BackButton from "@/components/ui/BackButton";
+import { saveLastActivity } from "@/lib/continueTracking";
+
 
 export default function StudyDeck({ deck, cards }) {
   const [index, setIndex] = useState(0);
@@ -14,6 +16,15 @@ export default function StudyDeck({ deck, cards }) {
   const [done, setDone] = useState(false);
 
   const card = cards[index];
+
+  useEffect(() => {
+  saveLastActivity({
+    type: "flashcards",
+    title: deck.title,
+    subtitle: `${cards.length} cards`,
+    href: `/flashcards/${deck.id}`,
+  });
+}, [deck, cards.length]);
 
   function goNext(bucket) {
     if (bucket === "known") setKnown((k) => [...k, card.id]);
@@ -44,7 +55,7 @@ export default function StudyDeck({ deck, cards }) {
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-4">
             <div className="rounded-lg bg-emerald-50 p-4">
-              <p className="readout text-xs text-emerald-700">KNEW IT</p>
+              <p className="readout text-xs text-emerald-700">NEXT</p>
               <p className="mt-1 text-2xl font-semibold text-emerald-700">
                 {known.length}
               </p>
@@ -151,7 +162,7 @@ export default function StudyDeck({ deck, cards }) {
                 className="w-full"
               >
                 <FaCheck className="mr-2 h-3.5 w-3.5" />
-                Knew it
+                Completed
               </Button>
             </motion.div>
           )}
