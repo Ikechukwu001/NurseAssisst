@@ -16,7 +16,7 @@ export const papers = [
     year: 2026,
     paperNumber: 1,
     subject: "Anatomy, Physiology & Basic Sciences",
-    questionCount: 100,
+    questionCount: 50,
     duration: 90,
     subjects: [
       { key: "anatomy-physiology", count: 60 },
