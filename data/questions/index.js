@@ -1,19 +1,24 @@
-import { papers } from "./papers";
+// index.js — new shape
+import { anatomyPhysiology } from './subjects/anatomy-physiology';
+import { medicalSurgical } from './subjects/medical-surgical';
+import { pharmacology } from './subjects/pharmacology';
+// ...import every subject file
 
-import * as gn2024 from "./general-nursing/2024";
-import * as mw2024 from "./midwifery/2024";
-
-const questionSources = {
-  "gn-2024": gn2024,
-  "mw-2024": mw2024,
+const subjectPools = {
+  "anatomy-physiology": anatomyPhysiology,
+  "medical-surgical": medicalSurgical,
+  "pharmacology": pharmacology,
+  // ...
 };
 
-export { papers };
+export function getQuestionsForPaper(examType, paperKey) {
+  const paperConfig = papers[examType][paperKey];
+  return paperConfig.subjects.flatMap(({ key, count }) =>
+    subjectPools[key].slice(0, count)
+  );
+}
 
-export const questions = papers.reduce((acc, paper) => {
-  const yearKey = `${paper.examType === "Midwifery" ? "mw" : "gn"}-${paper.year}`;
-  const source = questionSources[yearKey];
-  const paperKey = `paper${paper.paperNumber}`;
-  acc[paper.id] = source?.[paperKey] ?? [];
-  return acc;
-}, {});
+// still expose subject-level access directly, for a subject-practice mode
+export function getQuestionsForSubject(subjectKey) {
+  return subjectPools[subjectKey];
+}

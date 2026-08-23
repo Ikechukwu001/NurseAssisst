@@ -2,24 +2,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import Button from "@/components/ui/Button";
+import ReactiveVitalsMonitor from "@/components/practicals/ReactiveVitalsMonitor";
+import RadialTimer from "@/components/practicals/RadialTimer";
+import { useClinicalSound } from "@/hooks/useClinicalSound";
 import { saveLastActivity } from "@/lib/continueTracking";
-
 
 const STAGE_SECONDS = 90;
 
 function useCountdown(seconds, onExpire, resetKey) {
   const [remaining, setRemaining] = useState(seconds);
-
-  useEffect(() => {
-  saveLastActivity({
-    type: "practicals",
-    title: scenario.title,
-    subtitle: scenario.category,
-    href: `/practicals/${scenario.id}`,
-  });
-}, [scenario]);
 
   useEffect(() => {
     setRemaining(seconds);
@@ -45,11 +38,27 @@ export default function PracticalSimulation({ scenario }) {
   const [stageIndex, setStageIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const [outcome, setOutcome] = useState({ type: null, id: 0 });
+
+  const { playCorrect, playIncorrect, playTick, playExpire, primeAudio, muted, toggleMute } =
+    useClinicalSound();
 
   const stage = scenario.stages[stageIndex];
 
+  useEffect(() => {
+    saveLastActivity({
+      type: "practicals",
+      title: scenario.title,
+      subtitle: scenario.category,
+      href: `/practicals/${scenario.id}`,
+    });
+  }, [scenario]);
+
   function handleExpire() {
-    if (selected === null) commitAnswer(null);
+    if (selected === null) {
+      playExpire();
+      commitAnswer(null);
+    }
   }
 
   const remaining = useCountdown(
@@ -58,11 +67,26 @@ export default function PracticalSimulation({ scenario }) {
     phase === "case" ? stage?.id : null
   );
 
+  const urgent = remaining <= 15 && remaining > 0;
+
+  useEffect(() => {
+    if (phase === "case" && urgent) {
+      playTick();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remaining, phase]);
+
   function commitAnswer(choiceIndex) {
+    const correct = choiceIndex === stage.correctIndex;
+
     setAnswers((prev) => [
       ...prev,
-      { stageId: stage.id, choiceIndex, correct: choiceIndex === stage.correctIndex },
+      { stageId: stage.id, choiceIndex, correct },
     ]);
+
+    setOutcome({ type: correct ? "correct" : "incorrect", id: Date.now() });
+    if (correct) playCorrect();
+    else playIncorrect();
 
     if (stageIndex + 1 >= scenario.stages.length) {
       setPhase("debrief");
@@ -92,7 +116,10 @@ export default function PracticalSimulation({ scenario }) {
           <Button
             variant="accent"
             className="mt-8 w-full"
-            onClick={() => setPhase("case")}
+            onClick={() => {
+              primeAudio();
+              setPhase("case");
+            }}
           >
             Begin scenario
           </Button>
@@ -169,31 +196,42 @@ export default function PracticalSimulation({ scenario }) {
   }
 
   // phase === "case"
-  const urgent = remaining <= 15;
-
   return (
-    <div className="min-h-screen bg-navy-50 px-6 py-10">
+    <div className="relative min-h-screen bg-navy-50 px-6 py-10">
+      {urgent && (
+        <div
+          className="pointer-events-none fixed inset-0 z-40 animate-pulse"
+          style={{
+            background:
+              "radial-gradient(circle, transparent 55%, rgba(239,68,68,0.16) 100%)",
+          }}
+        />
+      )}
+
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
           <span className="readout text-xs text-navy-500">
             {scenario.category} · STAGE {stageIndex + 1}/{scenario.stages.length}
           </span>
-          <span
-            className={`readout flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-              urgent ? "bg-red-100 text-red-600" : "bg-red-50 text-red-500"
-            }`}
-          >
-            <FaClock className="h-3 w-3" />
-            00:{String(remaining).padStart(2, "0")}
-          </span>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleMute}
+              aria-label={muted ? "Unmute sounds" : "Mute sounds"}
+              className="rounded-full border border-navy-100 bg-white p-2 text-navy-500 transition-colors hover:text-navy-900"
+            >
+              {muted ? (
+                <FaVolumeMute className="h-3.5 w-3.5" />
+              ) : (
+                <FaVolumeUp className="h-3.5 w-3.5" />
+              )}
+            </button>
+            <RadialTimer remaining={remaining} total={STAGE_SECONDS} urgent={urgent} />
+          </div>
         </div>
 
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-navy-100">
-          <motion.div
-            className="h-full bg-red-500"
-            animate={{ width: `${(remaining / STAGE_SECONDS) * 100}%` }}
-            transition={{ duration: 1, ease: "linear" }}
-          />
+        <div className="mt-4">
+          <ReactiveVitalsMonitor vitalsBaseline={stage.vitals} outcome={outcome} />
         </div>
 
         <AnimatePresence mode="wait">
@@ -204,16 +242,10 @@ export default function PracticalSimulation({ scenario }) {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="mt-8 rounded-xl border border-navy-100 bg-white p-6 shadow-sm">
+            <div className="mt-4 rounded-xl border border-navy-100 bg-white p-6 shadow-sm">
               <p className="text-sm leading-relaxed text-navy-800">
                 {stage.reveal}
               </p>
-              <div className="readout mt-4 flex flex-wrap gap-3 text-xs text-navy-500">
-                <span>HR {stage.vitals.hr}</span>
-                <span>SpO2 {stage.vitals.spo2}%</span>
-                <span>BP {stage.vitals.bp}</span>
-                <span>RR {stage.vitals.rr}</span>
-              </div>
             </div>
 
             <p className="mt-8 font-medium text-navy-950">{stage.question}</p>

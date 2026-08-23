@@ -1,12 +1,28 @@
-import { scenarioCategories } from "./categories";
-import { scenario as medSurg } from "./med-surg";
-import { scenario as obstetric } from "./obstetric";
-import { scenario as pediatric } from "./pediatric";
+import { medSurgScenarios } from "./med-surg";
+import { obstetricScenarios } from "./obstetric";
+import { pediatricsScenarios } from "./pediatrics";
+import { psychiatricScenarios } from "./psychiatric";
+import { communityHealthScenarios } from "./community-health";
 
-export { scenarioCategories };
+const allScenarios = [
+  ...medSurgScenarios,
+  ...obstetricScenarios,
+  ...pediatricsScenarios,
+  ...psychiatricScenarios,
+  ...communityHealthScenarios,
+];
 
-export const scenarios = {
-  [medSurg.id]: medSurg,
-  [obstetric.id]: obstetric,
-  [pediatric.id]: pediatric,
-};
+// Single source of truth: the lookup used by the case player...
+export const scenarios = Object.fromEntries(allScenarios.map((s) => [s.id, s]));
+
+// ...and the metadata used by the browse page, both derived from the same
+// scenario objects. There is nothing left to hand-sync or drift out of step.
+export const scenarioCategories = allScenarios.map((s) => ({
+  id: s.id,
+  title: s.title,
+  category: s.category,
+  difficulty: s.difficulty,
+  duration: s.duration,
+  tier: s.tier,
+  description: s.description,
+}));
