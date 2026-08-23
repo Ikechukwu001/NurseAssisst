@@ -123,7 +123,7 @@ function AuthWidgetInner() {
 
         <Link href="/dashboard" className="mt-6 w-full">
           <Button variant="primary" className="w-full">
-            Continue to Dashboard
+            Continue with this account
             <FaArrowRight className="ml-2 h-3 w-3" />
           </Button>
         </Link>
@@ -132,7 +132,7 @@ function AuthWidgetInner() {
           onClick={handleUseAnotherAccount}
           className="mt-4 text-sm font-medium text-navy-500 underline hover:text-navy-900"
         >
-          Use another account
+          Change account
         </button>
       </div>
     );
