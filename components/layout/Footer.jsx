@@ -40,7 +40,7 @@ export default function Footer() {
             href="/?auth=signup#auth"
             className="flex-shrink-0 whitespace-nowrap rounded-full bg-navy-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-900"
           >
-            Get Started
+            Start
           </Link>
         </div>
       </div>
