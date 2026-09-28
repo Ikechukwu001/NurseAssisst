@@ -178,7 +178,7 @@ function AuthWidgetInner() {
           <Button
             type="submit"
             variant={tab === "signup" ? "accent" : "primary"}
-            className="w-full"
+            className="w-full cursor-pointer"
             disabled={loading}
           >
             {loading

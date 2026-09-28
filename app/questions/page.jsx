@@ -1,14 +1,16 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { FaBookOpen, FaArrowRight, FaClock } from "react-icons/fa";
+import { FaBookOpen, FaArrowRight, FaClock, FaLock } from "react-icons/fa";
 import BackButton from "@/components/ui/BackButton";
 import { papers, questions } from "@/data/questions";
+import { useIsPremium } from "@/hooks/useIsPremium";
 
 const examTypes = ["General Nursing", "Midwifery"];
 
 export default function QuestionsPage() {
   const [activeType, setActiveType] = useState("General Nursing");
+  const { isPremium } = useIsPremium();
 
   const filteredPapers = papers.filter((p) => p.examType === activeType);
   const years = [...new Set(filteredPapers.map((p) => p.year))].sort(
@@ -59,7 +61,9 @@ export default function QuestionsPage() {
                 .filter((p) => p.year === year)
                 .sort((a, b) => a.paperNumber - b.paperNumber)
                 .map((paper) => {
-                  const ready = (questions[paper.id]?.length ?? 0) > 0;
+                  const exists = (questions[paper.id]?.length ?? 0) > 0;
+                  const locked = exists && paper.tier === "premium" && !isPremium;
+                  const ready = exists && !locked;
 
                   const card = (
                     <div
@@ -89,7 +93,12 @@ export default function QuestionsPage() {
                           <FaClock className="h-3 w-3" />
                           {paper.duration} min
                         </span>
-                        {ready ? (
+                        {locked ? (
+                          <span className="readout flex items-center gap-1 text-[10px] font-medium text-amber-600">
+                            <FaLock className="h-2.5 w-2.5" />
+                            PREMIUM
+                          </span>
+                        ) : ready ? (
                           <FaArrowRight className="h-3.5 w-3.5 text-navy-400 transition-transform group-hover:translate-x-1 group-hover:text-navy-900" />
                         ) : (
                           <span className="readout text-[10px] text-navy-400">
@@ -100,13 +109,21 @@ export default function QuestionsPage() {
                     </div>
                   );
 
-                  return ready ? (
-                    <Link key={paper.id} href={`/questions/${paper.id}`}>
-                      {card}
-                    </Link>
-                  ) : (
-                    <div key={paper.id}>{card}</div>
-                  );
+                  if (ready) {
+                    return (
+                      <Link key={paper.id} href={`/questions/${paper.id}`}>
+                        {card}
+                      </Link>
+                    );
+                  }
+                  if (locked) {
+                    return (
+                      <Link key={paper.id} href="/pricing">
+                        {card}
+                      </Link>
+                    );
+                  }
+                  return <div key={paper.id}>{card}</div>;
                 })}
             </div>
           </div>

@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { FaClipboardCheck, FaArrowRight, FaClock, FaLayerGroup } from "react-icons/fa";
+import { FaClipboardCheck, FaArrowRight, FaClock, FaLayerGroup, FaLock } from "react-icons/fa";
 import BackButton from "@/components/ui/BackButton";
 import { scenarioCategories, scenarios } from "@/data/practicals/index";
+import { useIsPremium } from "@/hooks/useIsPremium";
 
 const difficultyColor = {
   Intermediate: "bg-amber-50 text-amber-700",
@@ -13,6 +14,7 @@ const difficultyColor = {
 
 export default function PracticalsPage() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const { isPremium } = useIsPremium();
 
   const categories = ["All", ...new Set(scenarioCategories.map((s) => s.category))];
   const filtered =
@@ -34,7 +36,6 @@ export default function PracticalsPage() {
           decide.
         </p>
 
-        {/* Category filter */}
         <div className="mt-8 flex flex-wrap gap-2">
           {categories.map((cat) => (
             <button
@@ -54,7 +55,9 @@ export default function PracticalsPage() {
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((s) => {
             const scenario = scenarios[s.id];
-            const ready = Boolean(scenario);
+            const exists = Boolean(scenario);
+            const locked = exists && s.tier === "premium" && !isPremium;
+            const ready = exists && !locked;
             const stageCount = scenario?.stages?.length ?? 0;
 
             const card = (
@@ -87,14 +90,19 @@ export default function PracticalsPage() {
                       <FaClock className="h-3 w-3" />
                       {s.duration}
                     </span>
-                    {ready && (
+                    {exists && (
                       <span className="flex items-center gap-1.5">
                         <FaLayerGroup className="h-3 w-3" />
                         {stageCount} stages
                       </span>
                     )}
                   </div>
-                  {ready ? (
+                  {locked ? (
+                    <span className="readout flex items-center gap-1 text-[10px] font-medium text-amber-600">
+                      <FaLock className="h-2.5 w-2.5" />
+                      PREMIUM
+                    </span>
+                  ) : ready ? (
                     <FaArrowRight className="h-3.5 w-3.5 text-navy-400 transition-transform group-hover:translate-x-1 group-hover:text-navy-900" />
                   ) : (
                     <span className="readout text-[10px] text-navy-400">
@@ -105,13 +113,21 @@ export default function PracticalsPage() {
               </div>
             );
 
-            return ready ? (
-              <Link key={s.id} href={`/practicals/${s.id}`}>
-                {card}
-              </Link>
-            ) : (
-              <div key={s.id}>{card}</div>
-            );
+            if (ready) {
+              return (
+                <Link key={s.id} href={`/practicals/${s.id}`}>
+                  {card}
+                </Link>
+              );
+            }
+            if (locked) {
+              return (
+                <Link key={s.id} href="/pricing">
+                  {card}
+                </Link>
+              );
+            }
+            return <div key={s.id}>{card}</div>;
           })}
         </div>
       </div>

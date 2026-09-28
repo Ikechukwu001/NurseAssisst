@@ -3,6 +3,9 @@ import { questions as gn2022Paper1 } from "./general-nursing/2022-paper1";
 import { questions as gn2022Paper2 } from "./general-nursing/2022-paper2";
 import { questions as gn2023Paper1 } from "./general-nursing/2023-paper1";
 import { questions as gn2024Paper1 } from "./general-nursing/2024-paper1";
+import { questions as gn2024Paper2 } from "./general-nursing/2024-paper2";
+import { questions as gn2025Paper1 } from "./general-nursing/2025-paper1";
+import { questions as gn2025Paper2 } from "./general-nursing/2025-paper2";
 
 export { papers };
 
@@ -15,4 +18,7 @@ export const questions = {
   "gn-2022-paper2": gn2022Paper2,
   "gn-2023-paper1": gn2023Paper1,
   "gn-2024-paper1": gn2024Paper1,
+  "gn-2024-paper2": gn2024Paper2,
+  "gn-2025-paper1": gn2025Paper1,
+  "gn-2025-paper2": gn2025Paper2,
 };

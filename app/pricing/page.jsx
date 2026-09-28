@@ -1,214 +1,400 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaCheckCircle, FaTimes } from "react-icons/fa";
-import BackButton from "@/components/ui/BackButton";
-import Button from "@/components/ui/Button";
-
-const plans = [
-  {
-    name: "Free",
-    price: { monthly: 0, yearly: 0 },
-    tagline: "Try the platform before you commit.",
-    features: [
-      { label: "1 free practice paper", included: true },
-      { label: "Sample flashcard deck", included: true },
-      { label: "1 practical scenario", included: true },
-      { label: "Full question bank (all years)", included: false },
-      { label: "All practical simulations", included: false },
-      { label: "Progress tracking & streaks", included: false },
-    ],
-    cta: "Get started free",
-    href: "/auth/signup",
-  },
-  {
-    name: "Premium",
-    price: { monthly: 2500, yearly: 24000 },
-    tagline: "Everything you need to walk in prepared.",
-    featured: true,
-    features: [
-      { label: "All papers, all years", included: true },
-      { label: "All flashcard decks", included: true },
-      { label: "All practical simulations", included: true },
-      { label: "Progress tracking & streaks", included: true },
-      { label: "Priority new-content access", included: true },
-      { label: "Downloadable result history", included: true },
-    ],
-    cta: "Upgrade to Premium",
-    href: "/auth/signup",
-  },
-];
-
-const faqs = [
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. Premium is a recurring subscription with no lock-in — cancel whenever you like and you'll keep access until the period ends.",
-  },
-  {
-    q: "Do you add new questions and practicals regularly?",
-    a: "Yes. We're actively expanding the question bank and practical scenario library — Premium members get new content first.",
-  },
-  {
-    q: "How do I pay?",
-    a: "Payments are processed securely via Paystack — cards, bank transfer, and USSD are supported.",
-  },
-];
+import {
+  FiArrowLeft,
+  FiCheckCircle,
+  FiAward,
+  FiZap,
+  FiShield,
+  FiClock,
+  FiFileText,
+  FiLock,
+  FiAlertCircle,
+} from "react-icons/fi";
+import Container from "@/components/layout/Container";
+import { createClient } from "@/src/lib/supabase/client";
+import { PREMIUM_PRICE_NAIRA, APP_HOME_PATH } from "@/src/lib/paystack/config";
 
 function formatNaira(amount) {
-  if (amount === 0) return "₦0";
-  return `₦${amount.toLocaleString()}`;
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 export default function PricingPage() {
-  const [billing, setBilling] = useState("monthly");
+  const supabase = createClient();
+
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadUserData() {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) return;
+      setUser(authUser ?? null);
+
+      if (authUser) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("id, email, full_name, plan, premium_status")
+          .eq("id", authUser.id)
+          .maybeSingle();
+
+        if (!mounted) return;
+        setProfile(profileData || null);
+      }
+
+      setLoadingUser(false);
+    }
+
+    loadUserData();
+    return () => {
+      mounted = false;
+    };
+  }, [supabase]);
+
+  const isPremium =
+    profile?.plan === "premium" || profile?.premium_status === "active";
+
+  const isPending = profile?.premium_status === "pending";
+
+  const handleUpgrade = async () => {
+    setErrorMessage("");
+
+    if (!user) {
+      setErrorMessage("Please sign in before upgrading.");
+      return;
+    }
+
+    setPaymentLoading(true);
+
+    try {
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.authorization_url) {
+        setErrorMessage(
+          data.error || "Failed to initialize payment. Please try again."
+        );
+        setPaymentLoading(false);
+        return;
+      }
+
+      // Redirect user to Paystack's hosted checkout page
+      window.location.href = data.authorization_url;
+    } catch {
+      setErrorMessage("A network error occurred. Please try again.");
+      setPaymentLoading(false);
+    }
+  };
+
+  if (loadingUser) {
+    return (
+      <main className="min-h-screen bg-slate-50 py-12 sm:py-16 lg:py-20">
+        <Container>
+          <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 w-28 rounded bg-slate-200" />
+              <div className="h-8 w-56 rounded bg-slate-200 sm:h-10 sm:w-80" />
+              <div className="h-4 w-full max-w-2xl rounded bg-slate-200" />
+              <div className="mt-8 grid gap-5 lg:grid-cols-2">
+                <div className="h-80 rounded-[24px] bg-slate-200 sm:h-96" />
+                <div className="h-80 rounded-[24px] bg-slate-200 sm:h-96" />
+              </div>
+            </div>
+          </div>
+        </Container>
+      </main>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-navy-50 px-6 py-12 lg:px-16">
-      <div className="mx-auto max-w-5xl">
-        <BackButton href="/dashboard" label="Dashboard" className="mb-4" />
+    <main className="min-h-screen bg-slate-50 py-12 sm:py-16 lg:py-20">
+      <Container>
+        <Link
+          href={APP_HOME_PATH}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-800"
+        >
+          <FiArrowLeft size={16} />
+          Back to Questions
+        </Link>
 
-        <div className="text-center">
-          <p className="readout text-xs text-navy-500">PRICING</p>
-          <h1 className="mt-2 font-[var(--font-display)] text-3xl font-semibold text-navy-950 sm:text-4xl">
-            Start free. Upgrade when you're ready.
-          </h1>
-          <p className="mx-auto mt-3 max-w-md text-navy-600">
-            One plan, everything unlocked — no confusing tiers.
-          </p>
+        <div className="mt-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-6 sm:p-8 lg:p-10">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-800 sm:px-4 sm:text-xs">
+              NurseAssist Pricing
+            </div>
 
-          {/* Billing toggle */}
-          <div className="mx-auto mt-8 inline-flex items-center rounded-full border border-navy-100 bg-white p-1">
-            {["monthly", "yearly"].map((cycle) => (
-              <button
-                key={cycle}
-                onClick={() => setBilling(cycle)}
-                className={`readout rounded-full px-4 py-1.5 text-xs font-medium capitalize transition-colors ${
-                  billing === cycle
-                    ? "bg-navy-900 text-white"
-                    : "text-navy-600 hover:text-navy-950"
-                }`}
-              >
-                {cycle}
-                {cycle === "yearly" && (
-                  <span className="ml-1.5 text-[10px] text-emerald-400">
-                    save 20%
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+            <h1 className="mt-5 text-2xl font-bold tracking-tight text-slate-900 sm:mt-6 sm:text-4xl lg:text-5xl">
+              Choose the access level that fits your preparation
+            </h1>
 
-        {/* Plan cards */}
-        <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`flex flex-col rounded-2xl border p-8 ${
-                plan.featured
-                  ? "border-navy-900 bg-navy-950 text-white shadow-xl"
-                  : "border-navy-100 bg-white"
-              }`}
-            >
-              <h3
-                className={`font-semibold ${
-                  plan.featured ? "text-white" : "text-navy-950"
-                }`}
-              >
-                {plan.name}
-              </h3>
-              <p
-                className={`mt-1 text-sm ${
-                  plan.featured ? "text-navy-300" : "text-navy-600"
-                }`}
-              >
-                {plan.tagline}
-              </p>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:mt-4 sm:text-base">
+              Start free with the basic features, then upgrade once to unlock
+              everything on NurseAssist. No subscriptions, no renewals.
+            </p>
 
-              <div className="mt-6 flex items-baseline gap-1">
-                <span
-                  className={`font-[var(--font-display)] text-4xl font-semibold ${
-                    plan.featured ? "text-white" : "text-navy-950"
-                  }`}
-                >
-                  {formatNaira(plan.price[billing])}
+            {isPremium && (
+              <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800">
+                <FiCheckCircle size={16} />
+                <span className="truncate">
+                  Your account already has premium access
                 </span>
-                {plan.price[billing] > 0 && (
-                  <span
-                    className={`readout text-xs ${
-                      plan.featured ? "text-navy-400" : "text-navy-500"
-                    }`}
-                  >
-                    /{billing === "monthly" ? "mo" : "yr"}
-                  </span>
-                )}
+              </div>
+            )}
+
+            {!isPremium && isPending && (
+              <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700">
+                <FiAlertCircle size={16} />
+                <span className="truncate">
+                  Payment pending — awaiting Paystack confirmation
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-2 lg:gap-6">
+            {/* FREE PLAN */}
+            <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-sm">
+                    Free Plan
+                  </p>
+                  <h2 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">
+                    Start for free
+                  </h2>
+                </div>
+                <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 sm:text-xs">
+                  Default Access
+                </div>
               </div>
 
-              <ul className="mt-8 flex-1 space-y-3">
-                {plan.features.map((f) => (
-                  <li
-                    key={f.label}
-                    className={`flex items-start gap-2.5 text-sm ${
-                      f.included
-                        ? plan.featured
-                          ? "text-navy-200"
-                          : "text-navy-700"
-                        : plan.featured
-                        ? "text-navy-600"
-                        : "text-navy-400"
-                    }`}
-                  >
-                    {f.included ? (
-                      <FaCheckCircle
-                        className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                          plan.featured ? "text-[var(--color-accent)]" : "text-navy-900"
-                        }`}
-                      />
-                    ) : (
-                      <FaTimes className="mt-0.5 h-4 w-4 flex-shrink-0 opacity-40" />
-                    )}
-                    {f.label}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-5 sm:mt-6">
+                <p className="text-3xl font-bold text-slate-900 sm:text-4xl">
+                  ₦0
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Good for trying the platform and getting a feel for the exam
+                  interface.
+                </p>
+              </div>
 
-              <Link href={plan.href}>
-                <Button
-                  variant={plan.featured ? "accent" : "outline"}
-                  className="mt-8 w-full"
-                >
-                  {plan.cta}
-                </Button>
+              <div className="mt-6 space-y-4 sm:mt-8">
+                {[
+                  "Access basic features and preview questions",
+                  "Practice inside a clean CBT-style interface",
+                  "See a preview-level result summary",
+                  "Get started immediately after account creation",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
+                    <FiCheckCircle
+                      size={18}
+                      className="mt-0.5 shrink-0 text-blue-700"
+                    />
+                    <p className="text-sm leading-7 text-slate-600">{item}</p>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href={APP_HOME_PATH}
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:mt-8"
+              >
+                Continue with Free Access
               </Link>
             </div>
-          ))}
-        </div>
 
-        {/* FAQ */}
-        <div className="mx-auto mt-20 max-w-2xl">
-          <h2 className="text-center font-[var(--font-display)] text-2xl font-semibold text-navy-950">
-            Frequently asked questions
-          </h2>
-          <div className="mt-8 space-y-4">
-            {faqs.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl border border-navy-100 bg-white p-5"
-              >
-                <summary className="cursor-pointer list-none text-sm font-medium text-navy-950 marker:content-none">
-                  <span className="flex items-center justify-between">
-                    {item.q}
-                    <span className="readout text-navy-400 transition-transform group-open:rotate-45">
-                      +
-                    </span>
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm text-navy-600">{item.a}</p>
-              </details>
-            ))}
+            {/* PREMIUM PLAN */}
+            <div className="relative overflow-hidden rounded-[24px] border border-amber-200 bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 p-5 text-white shadow-xl shadow-slate-300/40 sm:p-6">
+              <div className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-amber-400 px-3 py-1.5 text-[11px] font-bold text-slate-950 sm:right-5 sm:top-5 sm:text-xs">
+                <FiAward size={14} />
+                Recommended
+              </div>
+
+              <div className="max-w-lg pr-20 sm:pr-24">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-200 sm:text-sm">
+                  Premium Plan
+                </p>
+                <h2 className="mt-2 text-xl font-bold sm:text-3xl">
+                  Unlock the full NurseAssist experience
+                </h2>
+              </div>
+
+              <div className="mt-5 sm:mt-6">
+                <p className="text-3xl font-bold sm:text-4xl">
+                  {formatNaira(PREMIUM_PRICE_NAIRA)}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  One-time payment. Instant activation via Paystack — cards,
+                  bank transfer & USSD supported.
+                </p>
+              </div>
+
+              <div className="mt-6 space-y-4 sm:mt-8">
+                {[
+                  "Unlock everything on NurseAssist",
+                  "Full question bank across all papers and years",
+                  "Practical and scenario-based exam section",
+                  "Flashcards and the complete result review flow",
+                  "Use your account across devices once premium is activated",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
+                    <FiCheckCircle
+                      size={18}
+                      className="mt-0.5 shrink-0 text-amber-300"
+                    />
+                    <p className="text-sm leading-7 text-slate-100">{item}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-amber-200">
+                    <FiFileText size={16} />
+                    <span className="text-sm font-medium">Full Papers</span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    Access the complete CBT paper flow
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-amber-200">
+                    <FiClock size={16} />
+                    <span className="text-sm font-medium">Better Practice</span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    Stronger timed preparation
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-amber-200">
+                    <FiShield size={16} />
+                    <span className="text-sm font-medium">Secure Payment</span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    Powered by Paystack
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-amber-200">
+                    <FiLock size={16} />
+                    <span className="text-sm font-medium">No More Limits</span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    Remove the free plan restrictions
+                  </p>
+                </div>
+              </div>
+
+              {/* Paystack badge */}
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0ba4db]">
+                  <span className="text-[10px] font-bold text-white">P</span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  Pay securely via card, bank transfer, or USSD — powered by
+                  Paystack
+                </p>
+              </div>
+
+              {isPremium ? (
+                <div className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-blue-500 px-5 py-3.5 text-sm font-semibold text-white sm:mt-8">
+                  <FiCheckCircle size={16} />
+                  Premium Already Active
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleUpgrade}
+                  disabled={paymentLoading}
+                  className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-5 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-70 sm:mt-8"
+                >
+                  <FiZap size={16} />
+                  {paymentLoading
+                    ? "Preparing checkout…"
+                    : isPending
+                    ? "Continue Payment"
+                    : "Upgrade to Premium"}
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* HOW IT WORKS + WHY UPGRADE */}
+          <div className="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 sm:p-6">
+              <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                How premium activation works
+              </h3>
+              <div className="mt-5 space-y-4 sm:mt-6">
+                {[
+                  "Click upgrade — you'll be taken to Paystack's secure checkout page.",
+                  "Pay with your card, bank transfer, or USSD — whichever works for you.",
+                  "Paystack confirms your payment and sends you back to this site.",
+                  "Your account is upgraded to premium right away — no waiting needed.",
+                ].map((item, index) => (
+                  <div key={item} className="flex items-start gap-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-blue-800 ring-1 ring-slate-200">
+                      {index + 1}
+                    </div>
+                    <p className="text-sm leading-7 text-slate-600">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                Why students upgrade
+              </h3>
+              <div className="mt-5 space-y-4">
+                {[
+                  "To go beyond the free preview questions",
+                  "To practice with more confidence before the real exam",
+                  "To unlock the complete NurseAssist preparation experience",
+                  "To make their study process more serious and structured",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
+                    <FiCheckCircle
+                      size={18}
+                      className="mt-0.5 shrink-0 text-blue-700"
+                    />
+                    <p className="text-sm leading-7 text-slate-600">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Error message */}
+          {errorMessage && (
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:mt-8">
+              {errorMessage}
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </Container>
+    </main>
   );
 }
