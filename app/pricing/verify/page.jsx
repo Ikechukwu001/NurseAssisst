@@ -12,7 +12,7 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 import Container from "@/components/layout/Container";
-import { APP_HOME_PATH } from "@/src/lib/paystack/config";
+import { APP_HOME_PATH } from "@/lib/paystack/config";
 
 function VerifyContent() {
   const searchParams = useSearchParams();

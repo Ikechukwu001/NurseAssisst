@@ -14,8 +14,8 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import Container from "@/components/layout/Container";
-import { createClient } from "@/src/lib/supabase/client";
-import { PREMIUM_PRICE_NAIRA, APP_HOME_PATH } from "@/src/lib/paystack/config";
+import { createClient } from "@/lib/supabase/client";
+import { PREMIUM_PRICE_NAIRA, APP_HOME_PATH } from "@/lib/paystack/config";
 
 function formatNaira(amount) {
   return new Intl.NumberFormat("en-NG", {

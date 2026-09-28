@@ -2,14 +2,14 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { createClient } from "@/src/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   PRODUCT,
   REFERENCE_PREFIX,
   CURRENCY,
   PREMIUM_PRICE_NAIRA,
   PREMIUM_PRICE_KOBO,
-} from "@/src/lib/paystack/config";
+} from "@/lib/paystack/config";
 
 export async function POST() {
   try {

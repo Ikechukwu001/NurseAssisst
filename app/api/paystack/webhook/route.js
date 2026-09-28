@@ -6,7 +6,7 @@
 // signature check below still passes (same secret key, same raw body).
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { activatePremiumFromTransaction } from "@/src/lib/paystack/activate";
+import { activatePremiumFromTransaction } from "@/lib/paystack/activate";
 
 function signatureIsValid(rawBody, signature) {
   if (!signature) return false;

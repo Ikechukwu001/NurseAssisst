@@ -1,7 +1,7 @@
 // app/api/paystack/verify/route.js
 import { NextResponse } from "next/server";
-import { REFERENCE_PREFIX } from "@/src/lib/paystack/config";
-import { activatePremiumFromTransaction } from "@/src/lib/paystack/activate";
+import { REFERENCE_PREFIX } from "@/lib/paystack/config";
+import { activatePremiumFromTransaction } from "@/lib/paystack/activate";
 
 export async function GET(request) {
   try {
